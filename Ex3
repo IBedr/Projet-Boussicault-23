@@ -1,1 +1,252 @@
-#tapez ici le code 
+## Exercice 1: Tri rapide
+## 1. écrivez un algorithme récursif
+
+def tri_rapide(tableau):
+    if len(tableau) <= 1:
+        return tableau
+    else:
+        pivot = tableau[0]
+        elements_inf = [x for x in tableau[1:] if x <= pivot]
+        elements_sup = [x for x in tableau[1:] if x > pivot]
+        return tri_rapide(elements_inf) + [pivot] + tri_rapide(elements_sup)
+
+# Exemple d'utilisation
+tableau_non_trie = [12, 4, 5, 6, 7, 3, 1, 15]
+tableau_trie = tri_rapide(tableau_non_trie)
+print("Tableau non trié :", tableau_non_trie)
+print("Tableau trié :", tableau_trie)
+
+
+## 2. Proposez une version non récursive de cet algorithme.
+
+def tri_rapide_non_recursif(tableau):
+    if len(tableau) <= 1:
+        return tableau
+
+    stack = [(0, len(tableau) - 1)]
+    while stack:
+        low, high = stack.pop()
+        pivot_index = partitionner(tableau, low, high)
+
+        if pivot_index - 1 > low:
+            stack.append((low, pivot_index - 1))
+        if pivot_index + 1 < high:
+            stack.append((pivot_index + 1, high))
+
+    return tableau
+
+def partitionner(tableau, low, high):
+    pivot = tableau[low]
+    gauche = low + 1
+    droite = high
+
+    while True:
+        while gauche <= droite and tableau[gauche] <= pivot:
+            gauche += 1
+        while gauche <= droite and tableau[droite] > pivot:
+            droite -= 1
+        if gauche <= droite:
+            tableau[gauche], tableau[droite] = tableau[droite], tableau[gauche]
+        else:
+            break
+
+    tableau[low], tableau[droite] = tableau[droite], tableau[low]
+    return droite
+
+# Exemple d'utilisation
+tableau_non_trie = [12, 4, 5, 6, 7, 3, 1, 15]
+tri_rapide_non_recursif(tableau_non_trie)
+print("Tableau trié :", tableau_non_trie)
+
+
+## Exercice 2: Tri fusion
+
+def tri_fusion(tableau):
+    if len(tableau) <= 1:
+        return tableau
+
+    # Diviser le tableau en deux parties
+    milieu = len(tableau) // 2
+    gauche = tableau[:milieu]
+    droite = tableau[milieu:]
+
+    # Tri rÃ©cursif des deux parties
+    gauche = tri_fusion(gauche)
+    droite = tri_fusion(droite)
+
+    # Fusion des deux parties triÃ©es
+    return fusionner(gauche, droite)
+
+def fusionner(gauche, droite):
+    resultat = []
+    i = j = 0
+
+    while i < len(gauche) and j < len(droite):
+        if gauche[i] < droite[j]:
+            resultat.append(gauche[i])
+            i += 1
+        else:
+            resultat.append(droite[j])
+            j += 1
+
+    resultat.extend(gauche[i:])
+    resultat.extend(droite[j:])
+    return resultat
+
+# Exemple d'utilisation
+tableau_non_trie = [12, 4, 5, 6, 7, 3, 1, 15]
+tableau_trie = tri_fusion(tableau_non_trie)
+print("Tableau triÃ© :", tableau_trie)
+
+
+## Exercice 3: File circulaire
+
+class FileCirculaire:
+    def __init__(self, capacite):
+        self.capacite = capacite
+        self.file = [None] * capacite
+        self.tete = self.queue = -1
+
+    def enfiler(self, element):
+        if self.est_pleine():
+            print("La file est pleine. Enfilement impossible.")
+            return False
+        else:
+            if self.est_vide():
+                self.tete = self.queue = 0
+            else:
+                self.file[self.queue] = element
+                self.queue = (self.queue + 1) % self.capacite
+            return True
+
+    def defiler(self):
+        if self.est_vide():
+            print("La file est vide. DÃ©filement impossible.")
+            return None
+        else:
+            element_defile = self.file[self.tete]
+            if self.tete == self.queue:
+                self.tete = self.queue = -1
+            else:
+                self.tete = (self.tete + 1) % self.capacite
+            return element_defile
+
+    def file_est_vide(self):
+        return self.tete == self.queue == -1
+
+    def file_est_pleine(self):
+        return (self.queue + 1) % self.capacite == self.tete
+
+    def inserer_file(self, element):
+        if self.file_est_pleine():
+            self.redimensionner_file(self.capacite * 2)
+        self.enfiler(element)
+
+    def redimensionner_file(self, capacite):
+        if capacite < self.capacite:
+            print("La nouvelle capacitÃ© doit Ãªtre plus grande que l'ancienne.")
+            return False
+
+        nouvelle_file = [None] * capacite
+        i = 0
+
+        while not self.est_vide():
+            nouvelle_file[i] = self.defiler()
+            i += 1
+
+        self.file = nouvelle_file
+        self.tete = 0
+        self.queue = i - 1
+        self.capacite = capacite
+        return True
+
+# Exemple d'utilisation
+file = FileCirculaire(5)
+print(file.enfiler(1))  # True
+print(file.enfiler(2))  # True
+print(file.enfiler(3))  # True
+print(file.enfiler(4))  # True
+print(file.enfiler(5))  # True
+print(file.enfiler(6))  # False (file pleine)
+print(file.defiler())    # 1
+print(file.enfiler(7))  # True
+print(file.inserer_file(8))  # Double la capacitÃ© et ajoute 8
+print(file.defiler())    # 2
+
+
+## Exercice 4: Union de deux listes chaÃ®nÃ©es
+## 1. Ã‰crivez un algorithme qui prend en paramÃ¨tre deux ensembles, codÃ©s par des listes doublement chaÃ®nÃ©es non triÃ©es et qui renvoie une nouvelle liste chaÃ®nÃ©e qui est lâ€™union des deux ensembles.
+
+def union_sets(set1, set2):
+    # CrÃ©er une nouvelle liste pour stocker l'union des ensembles
+    result_set = create_list()
+
+    # Parcourir le premier ensemble et ajouter chaque Ã©lÃ©ment Ã  la nouvelle liste
+    current_cell = first_cell(set1)
+    while current_cell is not None:
+        value = value_cell(current_cell)
+        push_back(result_set, value)
+        current_cell = next_cell(current_cell)
+
+    # Parcourir le deuxiÃ¨me ensemble
+    current_cell = first_cell(set2)
+    while current_cell is not None:
+        value = value_cell(current_cell)
+
+        # VÃ©rifier si la valeur est dÃ©jÃ  prÃ©sente dans la nouvelle liste
+        if not contains_value(result_set, value):
+            push_back(result_set, value)
+
+        current_cell = next_cell(current_cell)
+
+    return result_set
+
+def contains_value(set_list, value):
+    # VÃ©rifier si la valeur est prÃ©sente dans la liste
+    current_cell = first_cell(set_list)
+    while current_cell is not None:
+        if value_cell(current_cell) == value:
+            return True
+        current_cell = next_cell(current_cell)
+
+    return False
+
+## 2. Maintenant, les ensembles sont codÃ©s par des listes doublement chaÃ®nÃ©es triÃ©es. Proposez un algorithme plus efficace qui fait lâ€™union des deux ensembles.
+
+def union_sorted_sets(set1, set2):
+    # CrÃ©er une nouvelle liste pour stocker l'union des ensembles
+    result_set = create_list()
+
+    # Initialiser les pointeurs pour parcourir les deux ensembles
+    current_cell1 = first_cell(set1)
+    current_cell2 = first_cell(set2)
+
+    # Parcourir les deux ensembles
+    while current_cell1 is not None and current_cell2 is not None:
+        value1 = value_cell(current_cell1)
+        value2 = value_cell(current_cell2)
+
+        # Ajouter la plus petite valeur Ã  la nouvelle liste
+        if value1 < value2:
+            push_back(result_set, value1)
+            current_cell1 = next_cell(current_cell1)
+        elif value1 > value2:
+            push_back(result_set, value2)
+            current_cell2 = next_cell(current_cell2)
+        else:
+            # Les valeurs sont Ã©gales, ajouter une seule fois Ã  la nouvelle liste
+            push_back(result_set, value1)
+            current_cell1 = next_cell(current_cell1)
+            current_cell2 = next_cell(current_cell2)
+
+    # Ajouter les Ã©lÃ©ments restants de set1, s'il y en a
+    while current_cell1 is not None:
+        push_back(result_set, value_cell(current_cell1))
+        current_cell1 = next_cell(current_cell1)
+
+    # Ajouter les Ã©lÃ©ments restants de set2, s'il y en a
+    while current_cell2 is not None:
+        push_back(result_set, value_cell(current_cell2))
+        current_cell2 = next_cell(current_cell2)
+
+    return result_set
